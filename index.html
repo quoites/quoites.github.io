@@ -40,6 +40,7 @@
             margin: 2rem auto;
             width: 80%;
             max-width: 800px;
+            overflow-y: auto; /* Enable scrolling if content overflows */
         }
 
         h2 {
@@ -122,7 +123,7 @@
             background-color: #fff;
             z-index: 10;
             padding: 2rem;
-            overflow: auto;
+            overflow: auto; /* Enable scrolling if content overflows */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             transform: scale(0.8); /* Start at 80% size */
             opacity: 0; /* Start as invisible */
@@ -166,6 +167,7 @@
             border-radius: 10px;
             margin-bottom: 1rem;
             border: 2px solid #000;
+            position: relative;
         }
 
         /* Delete Button */
@@ -173,20 +175,23 @@
             background: none;
             border: none;
             cursor: pointer;
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 2rem;
-            height: 2rem;
+            width: 1.5rem;
+            height: 1.5rem;
         }
 
-        .delete-btn img {
+        .delete-btn svg {
             width: 100%;
             height: auto;
             transition: transform 0.3s ease; /* Smooth transition for scaling */
         }
 
-        .delete-btn:hover img {
+        .delete-btn:hover svg {
             transform: scale(1.1); /* Slightly larger on hover */
         }
 
@@ -286,7 +291,10 @@
                 folderItem.innerHTML = `
                     ${folderName}
                     <button class="delete-btn" data-folder="${folderName}">
-                        <img src="https://img.icons8.com/ios/50/000000/filled-trash.png" alt="Delete">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
                     </button>
                 `;
 
@@ -365,7 +373,10 @@
                     <p>— ${quote.author}</p>
                     <small>${new Date(quote.date).toLocaleDateString()}</small>
                     <button class="delete-btn" data-quote-index="${index}">
-                        <img src="https://img.icons8.com/ios/50/000000/filled-trash.png" alt="Delete">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
                     </button>
                 `;
                 quoteList.appendChild(quoteItem);
