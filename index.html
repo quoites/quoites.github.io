@@ -104,6 +104,8 @@
             cursor: pointer;
             display: flex;
             justify-content: space-between;
+            align-items: center; /* Center items vertically */
+            position: relative; /* For positioning delete button */
             transition: transform 0.3s ease; /* Smooth transition for scaling */
         }
 
@@ -123,7 +125,7 @@
             background-color: #fff;
             z-index: 10;
             padding: 2rem;
-            overflow: auto; /* Enable scrolling if content overflows */
+            overflow-y: auto; /* Enable scrolling if content overflows */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             transform: scale(0.8); /* Start at 80% size */
             opacity: 0; /* Start as invisible */
@@ -167,7 +169,7 @@
             border-radius: 10px;
             margin-bottom: 1rem;
             border: 2px solid #000;
-            position: relative;
+            position: relative; /* For positioning delete button */
         }
 
         /* Delete Button */
@@ -275,7 +277,7 @@
         const quoteText = document.getElementById('quoteText');
         const authorName = document.getElementById('authorName');
         const quoteDate = document.getElementById('quoteDate');
-        let folders = {}; // Store folders and their quotes
+        let folders = JSON.parse(localStorage.getItem('folders')) || {}; // Load saved folders from localStorage
         let activeFolder = '';
 
         // Create a new folder
@@ -284,6 +286,7 @@
             if (folderName && !folders[folderName]) {
                 // Create a new folder in the folders object
                 folders[folderName] = [];
+                saveFolders(); // Save folders to localStorage
                 
                 // Add folder to the folder list
                 const folderItem = document.createElement('div');
@@ -349,6 +352,7 @@
                     author: authorNameValue,
                     date: quoteDateValue
                 });
+                saveFolders(); // Save folders to localStorage
 
                 // Reset the form
                 quoteText.value = '';
@@ -394,14 +398,56 @@
         // Delete a folder
         function deleteFolder(folderName) {
             delete folders[folderName];
+            saveFolders(); // Save folders to localStorage
+
             document.querySelector(`.folder-item .delete-btn[data-folder="${folderName}"]`).parentElement.remove();
         }
 
         // Delete a quote
         function deleteQuote(quoteIndex) {
             folders[activeFolder].splice(quoteIndex, 1);
+            saveFolders(); // Save folders to localStorage
+
             displayQuotes(activeFolder);
         }
+
+        // Save folders to localStorage
+        function saveFolders() {
+            localStorage.setItem('folders', JSON.stringify(folders));
+        }
+
+        // Initialize the page with existing folders
+        function initializePage() {
+            for (const folderName in folders) {
+                const folderItem = document.createElement('div');
+                folderItem.classList.add('folder-item');
+                folderItem.innerHTML = `
+                    ${folderName}
+                    <button class="delete-btn" data-folder="${folderName}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                `;
+                // Set up click event to open folder
+                folderItem.addEventListener('click', function() {
+                    openFolder(folderName);
+                });
+
+                // Add delete functionality
+                const deleteBtn = folderItem.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevent click from opening the folder
+                    deleteFolder(folderName);
+                });
+
+                folderList.appendChild(folderItem);
+            }
+        }
+
+        // Initialize page on load
+        initializePage();
     </script>
 
 </body>
