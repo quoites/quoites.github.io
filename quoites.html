@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quoites</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General styling for the body */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #fff;
+            color: #000;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Styling for the header */
+        header {
+            background-color: #fff;
+            color: #000;
+            text-align: center;
+            padding: 2rem;
+            border-bottom: 2px solid #000;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: 0.05rem;
+            text-transform: uppercase;
+        }
+
+        /* Styling for the main content */
+        main {
+            margin: 2rem auto;
+            width: 80%;
+            max-width: 800px;
+        }
+
+        h2 {
+            color: #111;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Folder Creation Form */
+        .folder-form, .quote-form {
+            background-color: #fff;
+            padding: 2rem;
+            border: 2px solid #000;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .folder-form input, .quote-form input, .quote-form textarea {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.75rem 0;
+            border-radius: 6px;
+            border: 2px solid #000;
+            background-color: #fff;
+            color: #000;
+        }
+
+        .quote-form textarea {
+            height: 100px; /* Fixed height for the textarea */
+            resize: none; /* Prevent user from resizing the textarea */
+        }
+
+        .folder-form button, .quote-form button {
+            background-color: #000;
+            color: #fff;
+            padding: 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .folder-form button:hover, .quote-form button:hover {
+            background-color: #333;
+        }
+
+        /* Folder List */
+        .folder-list {
+            margin-top: 2rem;
+        }
+
+        .folder-item {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border: 2px solid #000;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease; /* Smooth transition for scaling */
+        }
+
+        /* Hover effect to scale up the folder */
+        .folder-item:hover {
+            transform: scale(1.05); /* Slightly larger */
+        }
+
+        .delete-btn {
+            background-color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #000;
+            transition: transform 0.3s ease; /* Smooth transition for scaling */
+        }
+
+        /* Hover effect to scale up the delete button */
+        .delete-btn:hover {
+            transform: scale(1.2); /* Slightly larger */
+        }
+
+        /* Full-screen Folder View */
+        .folder-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #fff;
+            z-index: 10;
+            padding: 2rem;
+            overflow: auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            transform: scale(0.8); /* Start at 80% size */
+            opacity: 0; /* Start as invisible */
+            transition: transform 0.5s ease, opacity 0.5s ease; /* Smooth transitions for scaling and fading */
+        }
+
+        /* Style for when the folder view is active */
+        .folder-view.active {
+            transform: scale(1); /* Full size */
+            opacity: 1; /* Fully visible */
+        }
+
+        .folder-view .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 2rem;
+            height: 2rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Quote List */
+        .quote-list {
+            margin-top: 2rem;
+        }
+
+        .quote-item {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border: 2px solid #000;
+            position: relative;
+        }
+
+        /* Delete button in quotes */
+        .quote-item .delete-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 1rem;
+            color: #000;
+            background-color: #fff;
+        }
+
+        /* Hover effect to scale up the delete button in quotes */
+        .quote-item .delete-btn:hover {
+            transform: scale(1.2); /* Slightly larger */
+        }
+
+        /* Media Query for smaller devices */
+        @media (max-width: 600px) {
+            main {
+                width: 95%;
+            }
+
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            .folder-form input, .quote-form input, .quote-form textarea {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Quoites</h1>
+    </header>
+
+    <main>
+        <!-- Section to create and display folders -->
+        <div class="folder-form">
+            <h2>Create a New Folder</h2>
+            <input type="text" id="folderName" placeholder="Enter folder name" required>
+            <button id="createFolder">Create Folder</button>
+        </div>
+
+        <!-- Display list of folders -->
+        <div class="folder-list" id="folderList">
+            <h2>Your Folders</h2>
+            <!-- Folders will be displayed here -->
+        </div>
+    </main>
+
+    <!-- Full-screen folder view -->
+    <div class="folder-view" id="folderView">
+        <button class="close-btn" id="closeFolder">×</button>
+        <h2>Folder: <span id="currentFolderName"></span></h2>
+        <div class="quote-form">
+            <h2>Add a New Quote</h2>
+            <textarea id="quoteText" placeholder="Enter the quote..." required></textarea>
+            <input type="text" id="authorName" placeholder="Author" required>
+            <input type="date" id="quoteDate" required>
+            <button id="addQuote">Add Quote</button>
+        </div>
+        <div class="quote-list" id="quoteList">
+            <h2>Quotes</h2>
+            <!-- Quotes will be added here dynamically -->
+        </div>
+    </div>
+
+    <script>
+        // Retrieve data from localStorage
+        function loadFolders() {
+            const storedFolders = localStorage.getItem('folders');
+            return storedFolders ? JSON.parse(storedFolders) : {};
+        }
+
+        // Save data to localStorage
+        function saveFolders() {
+            localStorage.setItem('folders', JSON.stringify(folders));
+        }
+
+        const folderList = document.getElementById('folderList');
+        const createFolderBtn = document.getElementById('createFolder');
+        const folderNameInput = document.getElementById('folderName');
+        const folderView = document.getElementById('folderView');
+        const closeFolderBtn = document.getElementById('closeFolder');
+        const currentFolderName = document.getElementById('currentFolderName');
+        const quoteForm = document.getElementById('addQuote');
+        const quoteList = document.getElementById('quoteList');
+        const quoteText = document.getElementById('quoteText');
+        const authorName = document.getElementById('authorName');
+        const quoteDate = document.getElementById('quoteDate');
+        let folders = loadFolders(); // Initialize folders from localStorage
+        let activeFolder = '';
+
+        // Function to update the folder list
+        function updateFolderList() {
+            folderList.innerHTML = '<h2>Your Folders</h2>';
+            Object.keys(folders).forEach(folderName => {
+                const folderItem = document.createElement('div');
+                folderItem.classList.add('folder-item');
+                folderItem.innerHTML = `
+                    ${folderName}
+                    <button class="delete-btn" data-folder="${folderName}"><i class="fas fa-trash-alt"></i></button>
+                `;
+
+                // Set up click event to open folder or delete
+                folderItem.addEventListener('click', function(event) {
+                    if (event.target.closest('.delete-btn')) {
+                        deleteFolder(event.target.closest('.delete-btn').dataset.folder);
+                    } else {
+                        openFolder(folderName);
+                    }
+                });
+
+                folderList.appendChild(folderItem);
+            });
+        }
+
+        // Create a new folder
+        createFolderBtn.addEventListener('click', function() {
+            const folderName = folderNameInput.value.trim();
+            if (folderName && !folders[folderName]) {
+                // Create a new folder in the folders object
+                folders[folderName] = [];
+                saveFolders(); // Save updated folders
+
+                // Update the folder list display
+                updateFolderList();
+                folderNameInput.value = ''; // Reset input field
+            }
+        });
+
+        // Open a folder and show the folder view with transition
+        function openFolder(folderName) {
+            activeFolder = folderName;
+            currentFolderName.textContent = folderName;
+            folderView.style.display = 'block';
+            // Trigger reflow to ensure the transition is applied
+            folderView.offsetHeight; // Trigger a reflow
+            folderView.classList.add('active');
+            displayQuotes(folderName);
+        }
+
+        // Close the folder view
+        closeFolderBtn.addEventListener('click', function() {
+            folderView.classList.remove('active'); // Remove the active class to trigger exit transition
+
+            // Hide folder view after transition ends
+            setTimeout(() => {
+                folderView.style.display = 'none';
+            }, 500); // Match the transition duration
+        });
+
+        // Add a new quote to the current folder
+        quoteForm.addEventListener('click', function() {
+            const quoteTextValue = quoteText.value.trim();
+            const authorNameValue = authorName.value.trim();
+            const quoteDateValue = quoteDate.value.trim();
+
+            if (quoteTextValue && authorNameValue && quoteDateValue) {
+                // Add quote to the folder's quote array
+                folders[activeFolder].push({
+                    text: quoteTextValue,
+                    author: authorNameValue,
+                    date: quoteDateValue
+                });
+                saveFolders(); // Save updated folders
+
+                // Reset the form
+                quoteText.value = '';
+                authorName.value = '';
+                quoteDate.value = '';
+
+                // Display updated quotes
+                displayQuotes(activeFolder);
+            }
+        });
+
+        // Display quotes in the current folder
+        function displayQuotes(folderName) {
+            quoteList.innerHTML = '<h2>Quotes</h2>'; // Clear the list
+            const quotes = folders[folderName];
+
+            quotes.forEach((quote, index) => {
+                const quoteItem = document.createElement('div');
+                quoteItem.classList.add('quote-item');
+                quoteItem.innerHTML = `
+                    <h3>"${quote.text}"</h3>
+                    <p>— ${quote.author}</p>
+                    <small>${new Date(quote.date).toLocaleDateString()}</small>
+                    <button class="delete-btn" data-index="${index}"><i class="fas fa-trash-alt"></i></button>
+                `;
+                quoteList.appendChild(quoteItem);
+            });
+        }
+
+        // Delete a folder
+        function deleteFolder(folderName) {
+            delete folders[folderName];
+            saveFolders(); // Save updated folders
+
+            // Update the folder list display
+            updateFolderList();
+            if (activeFolder === folderName) {
+                folderView.classList.remove('active'); // Remove the active class to trigger exit transition
+
+                // Hide folder view after transition ends
+                setTimeout(() => {
+                    folderView.style.display = 'none';
+                }, 500); // Match the transition duration
+            }
+        }
+
+        // Delete a quote
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.delete-btn') && event.target.dataset.index !== undefined) {
+                const index = event.target.dataset.index;
+                folders[activeFolder].splice(index, 1);
+                saveFolders(); // Save updated folders
+                displayQuotes(activeFolder);
+            }
+        });
+
+        // Initialize the folder list on page load
+        updateFolderList();
+    </script>
+
+</body>
+</html>
