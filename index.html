@@ -172,11 +172,12 @@
 
         .quote-item {
             background-color: #fff;
-            padding: 1.5rem;
+            padding: 0.75rem 1rem; /* Reduced padding */
             border-radius: 10px;
             margin-bottom: 1rem;
             border: 2px solid #000;
             position: relative;
+            line-height: 1.4; /* Adjust line height for better spacing */
         }
 
         /* Delete button in quotes */
@@ -187,6 +188,7 @@
             font-size: 1rem;
             color: #000;
             background-color: #fff;
+            padding: 0.25rem; /* Added padding for better touch interaction */
         }
 
         /* Hover effect to scale up the delete button in quotes */
@@ -206,6 +208,16 @@
 
             .folder-form input, .quote-form input, .quote-form textarea {
                 padding: 0.75rem;
+            }
+
+            .quote-item {
+                padding: 0.5rem; /* Further reduced padding for mobile */
+            }
+
+            .quote-item .delete-btn {
+                font-size: 1.2rem; /* Slightly larger size for touch interactions */
+                top: 0.25rem; /* Adjusted top position */
+                right: 0.25rem; /* Adjusted right position */
             }
         }
     </style>
