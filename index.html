@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quoites</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* General styling for the body */
         body {
@@ -104,27 +103,12 @@
             cursor: pointer;
             display: flex;
             justify-content: space-between;
-            align-items: center;
             transition: transform 0.3s ease; /* Smooth transition for scaling */
         }
 
         /* Hover effect to scale up the folder */
         .folder-item:hover {
             transform: scale(1.05); /* Slightly larger */
-        }
-
-        .delete-btn {
-            background-color: #fff;
-            border: none;
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: #000;
-            transition: transform 0.3s ease; /* Smooth transition for scaling */
-        }
-
-        /* Hover effect to scale up the delete button */
-        .delete-btn:hover {
-            transform: scale(1.2); /* Slightly larger */
         }
 
         /* Full-screen Folder View */
@@ -159,13 +143,19 @@
             color: #fff;
             border: none;
             border-radius: 50%;
-            width: 2rem;
-            height: 2rem;
+            width: 2.5rem;
+            height: 2.5rem;
             font-size: 1.5rem;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Quote List */
+        .folder-view .close-btn:hover {
+            transform: scale(1.1); /* Slightly larger on hover */
+        }
+
         .quote-list {
             margin-top: 2rem;
         }
@@ -176,36 +166,56 @@
             border-radius: 10px;
             margin-bottom: 1rem;
             border: 2px solid #000;
-            position: relative;
         }
 
-        /* Delete button in quotes */
-        .quote-item .delete-btn {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            font-size: 1rem;
-            color: #000;
-            background-color: #fff;
+        /* Delete Button */
+        .delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
         }
 
-        /* Hover effect to scale up the delete button in quotes */
-        .quote-item .delete-btn:hover {
-            transform: scale(1.2); /* Slightly larger */
+        .delete-btn img {
+            width: 100%;
+            height: auto;
+            transition: transform 0.3s ease; /* Smooth transition for scaling */
+        }
+
+        .delete-btn:hover img {
+            transform: scale(1.1); /* Slightly larger on hover */
         }
 
         /* Media Query for smaller devices */
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             main {
-                width: 95%;
+                width: 90%;
             }
 
             header h1 {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
 
             .folder-form input, .quote-form input, .quote-form textarea {
-                padding: 0.75rem;
+                padding: 0.5rem;
+            }
+
+            .folder-item {
+                padding: 1rem;
+            }
+
+            .quote-form textarea {
+                height: 80px; /* Adjust height for smaller screens */
+            }
+
+            .close-btn {
+                width: 2rem;
+                height: 2rem;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -249,17 +259,6 @@
     </div>
 
     <script>
-        // Retrieve data from localStorage
-        function loadFolders() {
-            const storedFolders = localStorage.getItem('folders');
-            return storedFolders ? JSON.parse(storedFolders) : {};
-        }
-
-        // Save data to localStorage
-        function saveFolders() {
-            localStorage.setItem('folders', JSON.stringify(folders));
-        }
-
         const folderList = document.getElementById('folderList');
         const createFolderBtn = document.getElementById('createFolder');
         const folderNameInput = document.getElementById('folderName');
@@ -271,32 +270,8 @@
         const quoteText = document.getElementById('quoteText');
         const authorName = document.getElementById('authorName');
         const quoteDate = document.getElementById('quoteDate');
-        let folders = loadFolders(); // Initialize folders from localStorage
+        let folders = {}; // Store folders and their quotes
         let activeFolder = '';
-
-        // Function to update the folder list
-        function updateFolderList() {
-            folderList.innerHTML = '<h2>Your Folders</h2>';
-            Object.keys(folders).forEach(folderName => {
-                const folderItem = document.createElement('div');
-                folderItem.classList.add('folder-item');
-                folderItem.innerHTML = `
-                    ${folderName}
-                    <button class="delete-btn" data-folder="${folderName}"><i class="fas fa-trash-alt"></i></button>
-                `;
-
-                // Set up click event to open folder or delete
-                folderItem.addEventListener('click', function(event) {
-                    if (event.target.closest('.delete-btn')) {
-                        deleteFolder(event.target.closest('.delete-btn').dataset.folder);
-                    } else {
-                        openFolder(folderName);
-                    }
-                });
-
-                folderList.appendChild(folderItem);
-            });
-        }
 
         // Create a new folder
         createFolderBtn.addEventListener('click', function() {
@@ -304,10 +279,30 @@
             if (folderName && !folders[folderName]) {
                 // Create a new folder in the folders object
                 folders[folderName] = [];
-                saveFolders(); // Save updated folders
+                
+                // Add folder to the folder list
+                const folderItem = document.createElement('div');
+                folderItem.classList.add('folder-item');
+                folderItem.innerHTML = `
+                    ${folderName}
+                    <button class="delete-btn" data-folder="${folderName}">
+                        <img src="https://img.icons8.com/ios/50/000000/filled-trash.png" alt="Delete">
+                    </button>
+                `;
 
-                // Update the folder list display
-                updateFolderList();
+                // Set up click event to open folder
+                folderItem.addEventListener('click', function() {
+                    openFolder(folderName);
+                });
+
+                // Add delete functionality
+                const deleteBtn = folderItem.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevent click from opening the folder
+                    deleteFolder(folderName);
+                });
+
+                folderList.appendChild(folderItem);
                 folderNameInput.value = ''; // Reset input field
             }
         });
@@ -346,7 +341,6 @@
                     author: authorNameValue,
                     date: quoteDateValue
                 });
-                saveFolders(); // Save updated folders
 
                 // Reset the form
                 quoteText.value = '';
@@ -360,7 +354,7 @@
 
         // Display quotes in the current folder
         function displayQuotes(folderName) {
-            quoteList.innerHTML = '<h2>Quotes</h2>'; // Clear the list
+            quoteList.innerHTML = ''; // Clear the list
             const quotes = folders[folderName];
 
             quotes.forEach((quote, index) => {
@@ -370,41 +364,33 @@
                     <h3>"${quote.text}"</h3>
                     <p>— ${quote.author}</p>
                     <small>${new Date(quote.date).toLocaleDateString()}</small>
-                    <button class="delete-btn" data-index="${index}"><i class="fas fa-trash-alt"></i></button>
+                    <button class="delete-btn" data-quote-index="${index}">
+                        <img src="https://img.icons8.com/ios/50/000000/filled-trash.png" alt="Delete">
+                    </button>
                 `;
                 quoteList.appendChild(quoteItem);
+            });
+
+            // Add delete functionality to quote buttons
+            document.querySelectorAll('.quote-item .delete-btn').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.stopPropagation(); // Prevent click from opening the folder
+                    deleteQuote(event.target.closest('.quote-item').querySelector('.delete-btn').dataset.quoteIndex);
+                });
             });
         }
 
         // Delete a folder
         function deleteFolder(folderName) {
             delete folders[folderName];
-            saveFolders(); // Save updated folders
-
-            // Update the folder list display
-            updateFolderList();
-            if (activeFolder === folderName) {
-                folderView.classList.remove('active'); // Remove the active class to trigger exit transition
-
-                // Hide folder view after transition ends
-                setTimeout(() => {
-                    folderView.style.display = 'none';
-                }, 500); // Match the transition duration
-            }
+            document.querySelector(`.folder-item .delete-btn[data-folder="${folderName}"]`).parentElement.remove();
         }
 
         // Delete a quote
-        document.addEventListener('click', function(event) {
-            if (event.target.closest('.delete-btn') && event.target.dataset.index !== undefined) {
-                const index = event.target.dataset.index;
-                folders[activeFolder].splice(index, 1);
-                saveFolders(); // Save updated folders
-                displayQuotes(activeFolder);
-            }
-        });
-
-        // Initialize the folder list on page load
-        updateFolderList();
+        function deleteQuote(quoteIndex) {
+            folders[activeFolder].splice(quoteIndex, 1);
+            displayQuotes(activeFolder);
+        }
     </script>
 
 </body>
